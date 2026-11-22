@@ -54,7 +54,7 @@ fun LoginScreen(
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // 1. Nền Header Gradient bo 2 góc dưới
+            //Header
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -90,7 +90,7 @@ fun LoginScreen(
                 }
             }
 
-            // 2. Thẻ trắng nổi (Card_Login)
+            //Card_Login
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -113,7 +113,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Ô nhập Email
+                    //Email
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -149,7 +149,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Ô nhập Password
+                    //Password
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -207,7 +207,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Liên kết Forgot Password? căn phải
+                    //Forgot Password?
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.CenterEnd
@@ -226,7 +226,7 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Nút LOG IN dạng viên thuốc (Pill)
+                    //BUTTON LOG IN
                     Button(
                         onClick = { onLoginClick(email, password) },
                         modifier = Modifier
@@ -251,7 +251,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Footer bên dưới thẻ đăng nhập
+        //Footer
         Text(
             text = "(Use @usth.edu.vn email only)",
             color = TextMuted,
