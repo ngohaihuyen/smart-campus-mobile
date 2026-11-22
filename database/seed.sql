@@ -1,19 +1,16 @@
--- Du lieu mau, chi chay mot lan sau schema.sql tren database moi.
--- Khong dung INSERT IGNORE/REPLACE de tranh che loi hoac ghi de du lieu.
 USE smart_campus;
 SET NAMES utf8mb4;
 SET SESSION time_zone = '+00:00';
 START TRANSACTION;
 
--- Buoc 1: 2 sinh vien, 1 giang vien, 1 admin.
--- Mat khau demo: CampusDemo123! (bcrypt cost 10). Chi dung de hoc local.
+-- Thêm tài khoản mẫu để kiểm thử.
 INSERT INTO users (user_id, full_name, email, password_hash, role) VALUES
     (1, 'Nguyễn An', 'student1@example.test', '$2a$10$pVka.CuwW.kBfbNUDi1lZu30Y8Etm4a8ZQE2bsWMCLxm9OV5ErFq.', 'STUDENT'),
     (2, 'Trần Bình', 'student2@example.test', '$2a$10$pVka.CuwW.kBfbNUDi1lZu30Y8Etm4a8ZQE2bsWMCLxm9OV5ErFq.', 'STUDENT'),
     (3, 'Lê Minh', 'teacher@example.test', '$2a$10$pVka.CuwW.kBfbNUDi1lZu30Y8Etm4a8ZQE2bsWMCLxm9OV5ErFq.', 'TEACHER'),
     (4, 'Admin Demo', 'admin@example.test', '$2a$10$pVka.CuwW.kBfbNUDi1lZu30Y8Etm4a8ZQE2bsWMCLxm9OV5ErFq.', 'ADMIN');
 
--- Buoc 2: Phong ACTIVE va du 3 ly do UNAVAILABLE. Khong co equipment.
+-- Thêm phòng mẫu với các trạng thái vận hành.
 INSERT INTO facilities
     (facility_id, name, type, location, capacity, description, access_policy,
      operational_status, unavailable_reason, unavailable_note) VALUES
@@ -28,9 +25,7 @@ INSERT INTO facilities
     (5, 'Phòng tự học A103', 'STUDY_ROOM', 'Tầng 1, nhà A', 15,
      NULL, 'ALL', 'UNAVAILABLE', 'OTHER', 'Tạm đóng để kiểm kê');
 
--- Buoc 3: 5 booking, du 4 trang thai va 2 cach huy.
--- Moc ngay co dinh de de doi chieu. Gio trong file la UTC (campus = UTC+7).
--- Ngay su dung: 15/01/2030. 02:00 UTC = 09:00 tai campus.
+-- Thêm lịch mẫu để kiểm thử duyệt, từ chối và hủy.
 INSERT INTO bookings
     (booking_id, user_id, facility_id, start_time, end_time, reason, status,
      rejection_reason, reviewed_by, reviewed_at, cancelled_at, created_at, updated_at)
@@ -50,6 +45,7 @@ VALUES
 
 COMMIT;
 
+-- Kiểm tra số dòng đã nạp.
 SELECT 'users' AS table_name, COUNT(*) AS row_count FROM users
 UNION ALL SELECT 'facilities', COUNT(*) FROM facilities
 UNION ALL SELECT 'bookings', COUNT(*) FROM bookings;

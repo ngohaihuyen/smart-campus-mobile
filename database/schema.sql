@@ -1,15 +1,12 @@
--- Smart Campus Mobile - MySQL 8.0.16+ (InnoDB).
--- Chay mot lan tren database moi. Khong xoa/ghi de database da co.
--- DATETIME duoc luu theo UTC; moi ket noi backend phai SET time_zone = '+00:00'.
 SET NAMES utf8mb4;
 SET SESSION time_zone = '+00:00';
 
--- Buoc 1: Tao database. Neu ten da ton tai, dung lai va kiem tra truoc.
+-- Tạo database Smart Campus.
 CREATE DATABASE smart_campus
     CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE smart_campus;
 
--- Buoc 2: Users - tai khoan. PK nhan dien tung dong; UNIQUE ngan email trung.
+-- Lưu tài khoản và vai trò người dùng.
 CREATE TABLE users (
     user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     full_name VARCHAR(150) NOT NULL,
@@ -22,7 +19,7 @@ CREATE TABLE users (
     CONSTRAINT chk_users_role CHECK (role IN ('STUDENT', 'TEACHER', 'ADMIN'))
 ) ENGINE = InnoDB;
 
--- Buoc 3: Facilities - thong tin phong, quyen dat va trang thai van hanh.
+-- Lưu thông tin và trạng thái vận hành phòng.
 CREATE TABLE facilities (
     facility_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(150) NOT NULL,
@@ -57,7 +54,7 @@ CREATE TABLE facilities (
     INDEX idx_facilities_status_type (operational_status, type)
 ) ENGINE = InnoDB;
 
--- Buoc 4: Bookings - tao sau users/facilities vi co FK tham chieu hai bang nay.
+-- Lưu lịch đặt, thông tin xét duyệt và hủy.
 CREATE TABLE bookings (
     booking_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
@@ -84,7 +81,6 @@ CREATE TABLE bookings (
     CONSTRAINT chk_bookings_status CHECK (
         status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')
     ),
-    -- IS NOT NULL la can thiet: MySQL CHECK van chap nhan ket qua UNKNOWN (NULL).
     CONSTRAINT chk_bookings_state_data CHECK (
         (status = 'PENDING'
             AND reviewed_by IS NULL AND reviewed_at IS NULL
@@ -110,7 +106,3 @@ CREATE TABLE bookings (
     INDEX idx_bookings_status_created (status, created_at),
     INDEX idx_bookings_reviewer (reviewed_by)
 ) ENGINE = InnoDB;
-
--- Database chi kiem tra cau truc va du lieu trong tung dong.
--- Backend ve sau kiem tra quyen, gio campus, thoi luong, chuyen trang thai,
--- va chong trung lich bang transaction + SELECT facility ... FOR UPDATE.

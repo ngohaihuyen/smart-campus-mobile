@@ -1,0 +1,106 @@
+# Các request mẫu để kiểm thử khi backend được triển khai.
+@baseUrl = http://localhost:3000/api
+@studentToken = REPLACE_WITH_STUDENT_JWT
+@adminToken = REPLACE_WITH_ADMIN_JWT
+@facilityId = 1
+@bookingId = 12
+@date = 2030-01-15
+
+### A01 - Đăng ký tài khoản sinh viên
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{"fullName":"Sinh viên Demo","email":"newstudent@example.test","password":"CampusDemo123!"}
+
+### A02 - Đăng nhập để lấy JWT
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{"email":"student1@example.test","password":"CampusDemo123!"}
+
+### F01 - Lấy danh sách phòng
+GET {{baseUrl}}/facilities?type=STUDY_ROOM&page=1&limit=20
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### F02 - Lấy chi tiết phòng
+GET {{baseUrl}}/facilities/{{facilityId}}
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### B01 - Xem giờ trống theo ngày campus
+GET {{baseUrl}}/bookings/availability?facilityId={{facilityId}}&date={{date}}
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### B02 - Gửi yêu cầu đặt phòng
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{studentToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"facilityId":"{{facilityId}}","startTime":"{{date}}T13:00:00+07:00","endTime":"{{date}}T14:00:00+07:00","reason":"Học nhóm"}
+
+### B03 - Lấy lịch đặt của mình
+GET {{baseUrl}}/bookings/my?page=1&limit=20
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### B04 - Hủy booking của mình
+DELETE {{baseUrl}}/bookings/{{bookingId}}
+Authorization: Bearer {{studentToken}}
+Accept: application/json
+
+### A02 - Đăng nhập tài khoản Admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{"email":"admin@example.test","password":"CampusDemo123!"}
+
+### AD01 - Xem danh sách chờ duyệt
+GET {{baseUrl}}/admin/bookings?status=PENDING&page=1&limit=20
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### AD02 - Duyệt booking PENDING
+PATCH {{baseUrl}}/admin/bookings/{{bookingId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"status":"APPROVED"}
+
+### AD02 - Từ chối booking PENDING
+PATCH {{baseUrl}}/admin/bookings/{{bookingId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"status":"REJECTED","rejectionReason":"Phòng cần dùng cho kỳ thi"}
+
+### AD03 - Thêm phòng
+POST {{baseUrl}}/admin/facilities
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"name":"Phòng tự học A104","type":"STUDY_ROOM","location":"Tầng 1, nhà A","capacity":30,"description":"Phòng học nhóm","accessPolicy":"ALL","operationalStatus":"ACTIVE"}
+
+### AD04 - Ngừng hoạt động phòng
+PATCH {{baseUrl}}/admin/facilities/{{facilityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"operationalStatus":"UNAVAILABLE","unavailableReason":"OTHER","unavailableNote":"Tạm đóng để kiểm kê"}
+
+### AD04 - Mở lại phòng
+PATCH {{baseUrl}}/admin/facilities/{{facilityId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{"operationalStatus":"ACTIVE","unavailableReason":null,"unavailableNote":null}
