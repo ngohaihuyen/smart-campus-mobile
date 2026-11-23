@@ -6,7 +6,7 @@ const { readBody } = require('../utils/validate');
 const { toUser } = require('../utils/mappers');
 
 // No public registration: the team decided to drop POST /api/auth/register.
-// Accounts are provided by the school (database/seed.sql for local testing).
+// Accounts are provided by the school (seed.sql on branch feature/database for local testing).
 
 const TOKEN_TTL_SECONDS = Number(process.env.JWT_EXPIRES_IN_SECONDS || 3600);
 

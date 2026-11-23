@@ -4,13 +4,13 @@ REST API (Node.js + Express + MySQL) cho ứng dụng Android đặt phòng Smar
 
 - **Hợp đồng API**: [docs/REST_API.md](docs/REST_API.md), sao chép từ repo `smart-campus-mobile` (nhánh `feature/api-design`).
 - **Ghi chú backend** (thời gian, JWT hết hạn, chạy qua Wi-Fi, các điểm đã chốt): [docs/BACKEND_NOTES.md](docs/BACKEND_NOTES.md)
-- **Schema**: `database/schema.sql` và `database/seed.sql` lấy từ repo Mobile.
+- **Database (SQL)**: không nằm trong nhánh này. Lấy `database/schema.sql` và `database/seed.sql` ở nhánh `feature/database`.
 
 ## Chạy nhanh
 
 1. Cài Node.js LTS và MySQL 8 (MySQL Workbench).
-2. Trong MySQL Workbench, mở và chạy `database/schema.sql`, sau đó `database/seed.sql` (biểu tượng tia sét).
-   Hai file này **giống hệt** bản trong repo Mobile (nhánh `feature/database`), không sửa gì.
+2. Lấy `database/schema.sql` và `database/seed.sql` từ nhánh `feature/database`. Trong MySQL Workbench,
+   mở và chạy `schema.sql`, sau đó `seed.sql` (biểu tượng tia sét).
    Chúng chỉ chạy được trên máy **chưa có** database `smart_campus`. Muốn chạy lại từ đầu,
    chạy lệnh `DROP DATABASE smart_campus;` trước (mất hết dữ liệu trong database đó).
 3. Trong thư mục này:
@@ -28,7 +28,7 @@ npm run dev               # tự khởi động lại khi sửa code
    `SmartCampus.postman_collection.json` vào Postman. Các request Login tự lưu token.
 
 **Không có API đăng ký** (nhóm đã bỏ `POST /api/auth/register`): tài khoản do nhà trường cấp,
-khi chạy local thì lấy từ `database/seed.sql`. Tài khoản mẫu, mật khẩu đều là `CampusDemo123!`:
+khi chạy local thì lấy từ `seed.sql` (nhánh `feature/database`). Tài khoản mẫu, mật khẩu đều là `CampusDemo123!`:
 
 | Email | Role |
 | --- | --- |
@@ -77,9 +77,6 @@ src/
     time.js                 # RFC 3339 <-> UTC, ngày campus (Asia/Ho_Chi_Minh)
     validate.js             # kiểm tra body/query/ID/phân trang
     mappers.js              # dòng MySQL (snake_case) -> JSON (camelCase)
-database/
-  schema.sql                # tạo bảng (từ repo Mobile)
-  seed.sql                  # dữ liệu mẫu (từ repo Mobile)
 docs/
   REST_API.md               # hợp đồng API (từ repo Mobile)
   REST_API.http             # request mẫu (từ repo Mobile)
