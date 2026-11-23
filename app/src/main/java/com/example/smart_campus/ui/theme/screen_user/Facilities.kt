@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.outlined.LocationOn
@@ -125,208 +126,216 @@ fun UserFacilitiesScreen(
                 )
         )
 
-        // LỚP 2: Nội dung cuộn dọc
+        // LỚP 2: Chia màn hình thành 2 phần: Phần trên cố định + Phần dưới chỉ cuộn thẻ phòng
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(44.dp))
-
-            // Hàng trên cùng: Nút Back bên trái + Pill User bên phải
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // --- PHẦN 1: CỐ ĐỊNH (Header + Thẻ tìm kiếm & bộ lọc + Thanh đếm kết quả) ---
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier.size(36.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                Spacer(modifier = Modifier.height(44.dp))
 
-                // Pill User góc trên bên phải
+                // Hàng trên cùng: Nút Back bên trái + Pill User bên phải
                 Row(
-                    modifier = Modifier
-                        .height(34.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.22f))
-                        .clickable { onProfileClick() }
-                        .padding(start = 6.dp, end = 12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.AccountCircle,
-                        contentDescription = "User Avatar",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .height(34.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.22f))
+                            .clickable { onProfileClick() }
+                            .padding(start = 6.dp, end = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.AccountCircle,
+                            contentDescription = "User Avatar",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = userName,
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                // Biểu tượng tòa nhà & Tiêu đề chính giữa Header
+                Icon(
+                    imageVector = Icons.Rounded.AccountBalance,
+                    contentDescription = "Facilities Icon",
+                    tint = Color.White,
+                    modifier = Modifier.size(40.dp)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Facilities",
+                    color = Color.White,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // THẺ TÌM KIẾM & BỘ LỌC (Cố định, đè lên mép dưới bo cong của Header)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.White,
+                    shadowElevation = 8.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = {
+                                Text(
+                                    text = "Search name, location, equipment...",
+                                    color = TextMuted,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Search,
+                                    contentDescription = "Search",
+                                    tint = TextMuted,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = TealAccent,
+                                unfocusedBorderColor = BorderGray,
+                                focusedContainerColor = Color(0xFFF8FAFC),
+                                unfocusedContainerColor = Color(0xFFF8FAFC)
+                            )
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            FilterDropdownChip(
+                                label = selectedCategory,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    selectedCategory = when (selectedCategory) {
+                                        "All Spaces" -> "Lecture Hall"
+                                        "Lecture Hall" -> "Laboratory"
+                                        else -> "All Spaces"
+                                    }
+                                }
+                            )
+                            FilterDropdownChip(
+                                label = selectedCapacity,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    selectedCapacity = if (selectedCapacity == "Any Capacity") "50+ People" else "Any Capacity"
+                                }
+                            )
+                            AvailabilityToggleChip(
+                                checked = availableTodayOnly,
+                                modifier = Modifier.weight(1.1f),
+                                onToggle = { availableTodayOnly = !availableTodayOnly }
+                            )
+                        }
+
+                        Button(
+                            onClick = { appliedQuery = searchQuery.trim() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = NavyPrimary,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(
+                                text = "Apply Filters",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                // Hàng đếm kết quả & Sắp xếp (Cố định ngay bên trên danh sách cuộn)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = userName,
-                        color = Color.White,
+                        text = "${filteredFacilities.size} facilities found",
+                        color = TextNavyDark,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Sort: Most Popular",
+                        color = TealAccent,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+
+                Spacer(modifier = Modifier.height(6.dp))
             }
 
-            // Biểu tượng tòa nhà & Tiêu đề chính giữa Header
-            Icon(
-                imageVector = Icons.Rounded.AccountBalance,
-                contentDescription = "Facilities Icon",
-                tint = Color.White,
-                modifier = Modifier.size(40.dp)
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = "Facilities",
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // THẺ TÌM KIẾM & BỘ LỌC (Đè lên mép dưới bo cong của Header)
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                color = Color.White,
-                shadowElevation = 8.dp
+            // --- PHẦN 2: CHỈ CUỘN DANH SÁCH THẺ PHÒNG ---
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentPadding = PaddingValues(top = 6.dp, bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    // Ô tìm kiếm
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = {
-                            Text(
-                                text = "Search name, location, equipment...",
-                                color = TextMuted,
-                                fontSize = 12.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = "Search",
-                                tint = TextMuted,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = TealAccent,
-                            unfocusedBorderColor = BorderGray,
-                            focusedContainerColor = Color(0xFFF8FAFC),
-                            unfocusedContainerColor = Color(0xFFF8FAFC)
-                        )
-                    )
-
-                    // Hàng 3 chip lọc ngang: All Spaces | Any Capacity | Available Today
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        FilterDropdownChip(
-                            label = selectedCategory,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                selectedCategory = when (selectedCategory) {
-                                    "All Spaces" -> "Lecture Hall"
-                                    "Lecture Hall" -> "Laboratory"
-                                    else -> "All Spaces"
-                                }
-                            }
-                        )
-                        FilterDropdownChip(
-                            label = selectedCapacity,
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                selectedCapacity = if (selectedCapacity == "Any Capacity") "50+ People" else "Any Capacity"
-                            }
-                        )
-                        AvailabilityToggleChip(
-                            checked = availableTodayOnly,
-                            modifier = Modifier.weight(1.1f),
-                            onToggle = { availableTodayOnly = !availableTodayOnly }
-                        )
-                    }
-
-                    // Nút Apply Filters
-                    Button(
-                        onClick = { appliedQuery = searchQuery.trim() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(42.dp),
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = NavyPrimary,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Text(
-                            text = "Apply Filters",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Hàng đếm kết quả & Sắp xếp
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${filteredFacilities.size} facilities found",
-                    color = TextNavyDark,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Sort: Most Popular",
-                    color = TealAccent,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Danh sách thẻ phòng
-            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                filteredFacilities.forEach { facility ->
+                items(
+                    items = filteredFacilities,
+                    key = { it.id }
+                ) { facility ->
                     UserFacilityCard(
                         facility = facility,
+                        modifier = Modifier.padding(horizontal = 20.dp),
                         onViewDetailsClick = { onViewDetailsClick(facility) }
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -410,10 +419,11 @@ private fun AvailabilityToggleChip(
 @Composable
 private fun UserFacilityCard(
     facility: UserFacilityUiModel,
+    modifier: Modifier = Modifier,
     onViewDetailsClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         color = Color.White,
         shadowElevation = 6.dp

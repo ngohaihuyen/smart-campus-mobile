@@ -30,12 +30,16 @@ sealed class AppRoute(val route: String) {
     data object Facilities : AppRoute("tab_facilities")
     data object Bookings : AppRoute("tab_bookings")
     data object Profile : AppRoute("tab_profile")
+    // tab màn chi tiết phòng
+    data object FacilityDetails : AppRoute("facility_details")
 }
 
 @Composable
 fun AppNavGraph() {
     val rootNavController = rememberNavController()
     val context = LocalContext.current
+    var selectedFacility by remember { mutableStateOf<UserFacilityUiModel?>(null) }
+    var targetTabRoute by remember { mutableStateOf<String?>(null) }
 
     NavHost(
         navController = rootNavController,
@@ -67,14 +71,39 @@ fun AppNavGraph() {
             )
         }
 
-        // 2. Cụm giao diện chính của User (gồm 4 tab + thanh Bottom Bar)
+        // 2. Cụm giao diện chính của User
         composable(AppRoute.UserMain.route) {
             UserMainScreen(
                 onLogout = {
-                    // Đăng xuất: quay về Login và xóa sạch lịch sử các tab
                     rootNavController.navigate(AppRoute.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onOpenFacilityDetails = { facility ->
+                    selectedFacility = facility
+                    rootNavController.navigate(AppRoute.FacilityDetails.route)
+                }
+            )
+        }
+
+        // 3. Màn hình Chi tiết phòng & Đặt lịch
+        composable(AppRoute.FacilityDetails.route) {
+            FacilityDetailsScreen(
+                facility = selectedFacility,
+                userName = "Bimbim",
+                onBackClick = { rootNavController.popBackStack() },
+                // Bấm pill user -> đóng màn Details và mở thẳng tab Profile
+                onProfileClick = {
+                    targetTabRoute = AppRoute.Profile.route
+                    rootNavController.popBackStack()
+                },
+                onConfirmBookingClick = { date, start, end, _ ->
+                    Toast.makeText(
+                        context,
+                        "Đã gửi yêu cầu đặt phòng ($date • $start – $end)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    rootNavController.popBackStack()
                 }
             )
         }
@@ -82,7 +111,12 @@ fun AppNavGraph() {
 }
 
 @Composable
-fun UserMainScreen(onLogout: () -> Unit) {
+fun UserMainScreen(
+    targetTabRoute: String? = null,
+    onTargetTabConsumed: () -> Unit = {},
+    onLogout: () -> Unit,
+    onOpenFacilityDetails: (UserFacilityUiModel?) -> Unit = {}
+) {
     val tabNavController = rememberNavController()
     val navBackStackEntry by tabNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -107,6 +141,14 @@ fun UserMainScreen(onLogout: () -> Unit) {
         }
     }
 
+    // Tự động chuyển tab ngay khi nhận được yêu cầu từ màn hình ngoài
+    LaunchedEffect(targetTabRoute) {
+        if (targetTabRoute != null) {
+            switchToTab(targetTabRoute)
+            onTargetTabConsumed()
+        }
+    }
+
     Scaffold(
         containerColor = ScreenBgGray,
         bottomBar = {
@@ -125,11 +167,12 @@ fun UserMainScreen(onLogout: () -> Unit) {
             // TAB 0: Home (User Dashboard)
             composable(AppRoute.Home.route) {
                 UserDashboardScreen(
-                    userName = "Jennie",
+                    userName = "BimBim",
                     bottomPadding = innerPadding.calculateBottomPadding(),
                     onProfileClick = { switchToTab(AppRoute.Profile.route) },
                     onBookFacilityClick = { switchToTab(AppRoute.Facilities.route) },
-                    onViewAllBookingsClick = { switchToTab(AppRoute.Bookings.route) }
+                    onViewAllBookingsClick = { switchToTab(AppRoute.Bookings.route) },
+                    onBookingItemClick = { onOpenFacilityDetails(null) }
                 )
             }
 
@@ -140,42 +183,44 @@ fun UserMainScreen(onLogout: () -> Unit) {
                     bottomPadding = innerPadding.calculateBottomPadding(),
                     onBackClick = { switchToTab(AppRoute.Home.route) },
                     onProfileClick = { switchToTab(AppRoute.Profile.route) },
-                    onViewDetailsClick = { selectedFacility ->
-                        // Bước tiếp theo sẽ điều hướng sang FacilityDetailsScreen(selectedFacility)
+                    onViewDetailsClick = { selectedFacility -> onOpenFacilityDetails(selectedFacility)
                     }
                 )
             }
 
-            // TAB 2: Bookings (Bạn sẽ thay bằng MyBookingsScreen() khi viết xong)
+            // TAB 2: Bookings
             composable(AppRoute.Bookings.route) {
-                TabPlaceholderScreen(title = "My Bookings")
+                MyBookingsScreen(
+                    userName = "BimBim",
+                    bottomPadding = innerPadding.calculateBottomPadding(),
+                    onBackClick = { switchToTab(AppRoute.Home.route) },
+                    onProfileClick = { switchToTab(AppRoute.Profile.route) },
+                    onBrowseFacilitiesClick = { switchToTab(AppRoute.Facilities.route) },
+                    onViewBookingClick = { reservation ->
+                        // Chuyển sang màn hình chi tiết của phòng đã đặt
+                        onOpenFacilityDetails(
+                            UserFacilityUiModel(
+                                id = reservation.id,
+                                name = reservation.facilityName,
+                                category = reservation.category,
+                                capacity = 60,
+                                location = "Campus Building",
+                                description = "Reserved on ${reservation.date} (${reservation.timeSlot})"
+                            )
+                        )
+                    }
+                )
             }
 
-            // TAB 3: Profile (Có sẵn nút LOG OUT để test quay lại màn Login)
+            // TAB 3: My Profile
             composable(AppRoute.Profile.route) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "My Profile (Jennie)",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextNavyDark
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Button(
-                        onClick = onLogout,
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD92D20))
-                    ) {
-                        Text("LOG OUT", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
-                }
+                UserProfileScreen(
+                    userName = "Bimbim",
+                    userEmail = "thangdzai@usth.edu.vn",
+                    bottomPadding = innerPadding.calculateBottomPadding(),
+                    onBackClick = { switchToTab(AppRoute.Home.route) },
+                    onLogoutClick = onLogout
+                )
             }
         }
     }
