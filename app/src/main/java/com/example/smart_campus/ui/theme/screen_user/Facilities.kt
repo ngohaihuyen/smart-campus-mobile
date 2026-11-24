@@ -130,7 +130,7 @@ fun UserFacilitiesScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // --- PHẦN 1: CỐ ĐỊNH (Header + Thẻ tìm kiếm & bộ lọc + Thanh đếm kết quả) ---
+            // --- PHẦN 1:(Header + Thẻ tìm kiếm & bộ lọc + Thanh đếm kết quả) ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -317,7 +317,7 @@ fun UserFacilitiesScreen(
                 Spacer(modifier = Modifier.height(6.dp))
             }
 
-            // --- PHẦN 2: CHỈ CUỘN DANH SÁCH THẺ PHÒNG ---
+            // --- PHẦN 2: DANH SÁCH THẺ PHÒNG ---
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()

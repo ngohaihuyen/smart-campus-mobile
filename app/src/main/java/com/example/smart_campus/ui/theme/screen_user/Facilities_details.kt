@@ -1,5 +1,6 @@
 package com.example.smart_campus.ui.theme.screen_user
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Apartment
+import androidx.compose.material.icons.rounded.EventAvailable
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,7 +49,6 @@ fun FacilityDetailsScreen(
     onProfileClick: () -> Unit = {},
     onConfirmBookingClick: (date: String, startTime: String, endTime: String, duration: String) -> Unit = { _, _, _, _ -> }
 ) {
-    // Dữ liệu hiển thị (lấy từ facility được truyền sang hoặc dùng mẫu Lecture Hall A21)
     val facilityName = facility?.name ?: "Lecture Hall A21"
     val facilityLocation = facility?.location ?: "Building A21, Floor 8"
     val facilityCapacity = facility?.capacity ?: 300
@@ -75,21 +77,142 @@ fun FacilityDetailsScreen(
     var startTimeIndex by remember { mutableIntStateOf(2) } // Mặc định 14:30
     var endTimeIndex by remember { mutableIntStateOf(2) }   // Mặc định 16:45
 
+    // State bật/tắt bảng xác nhận đặt phòng
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
     val currentStartTime = startTimeOptions[startTimeIndex]
     val currentEndTime = endTimeOptions[endTimeIndex]
     val totalDurationText = remember(currentStartTime, currentEndTime) {
         calculateDurationLabel(currentStartTime, currentEndTime)
     }
 
-    // Dữ liệu 6 đoạn trên thanh Availability Timeline (08:00 -> 22:00)
     val timelineSegments = remember {
         listOf(
-            TimelineSlotStatus.AVAILABLE,    // 08:00 - 10:00
-            TimelineSlotStatus.OCCUPIED,     // 10:00 - 12:00
-            TimelineSlotStatus.AVAILABLE,    // 12:00 - 14:00
-            TimelineSlotStatus.MY_SELECTION, // 14:00 - 16:00
-            TimelineSlotStatus.PENDING,      // 16:00 - 18:00
-            TimelineSlotStatus.AVAILABLE     // 18:00 - 22:00
+            TimelineSlotStatus.AVAILABLE,
+            TimelineSlotStatus.OCCUPIED,
+            TimelineSlotStatus.AVAILABLE,
+            TimelineSlotStatus.MY_SELECTION,
+            TimelineSlotStatus.PENDING,
+            TimelineSlotStatus.AVAILABLE
+        )
+    }
+
+    // BẢNG XÁC NHẬN ĐẶT PHÒNG (Hiện lên khi bấm nút Confirm Booking)
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(22.dp),
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE6F2F3)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.EventAvailable,
+                        contentDescription = "Confirm Booking",
+                        tint = TealAccent,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = "Confirm Booking",
+                    color = TextNavyDark,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Please review your reservation details before confirming:",
+                        color = TextMuted,
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Khung tóm tắt thông tin trong bảng xác nhận
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFFF8FAFC))
+                            .border(1.dp, Color(0xFFEAECF0), RoundedCornerShape(12.dp))
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SummaryDetailRow(
+                            label = "Facility:",
+                            value = facilityName
+                        )
+                        SummaryDetailRow(
+                            label = "Date:",
+                            value = dateOptions[selectedDateIndex].second
+                        )
+                        SummaryDetailRow(
+                            label = "Time slot:",
+                            value = "$currentStartTime – $currentEndTime"
+                        )
+                        SummaryDetailRow(
+                            label = "Duration:",
+                            value = totalDurationText,
+                            valueColor = TealAccent
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        onConfirmBookingClick(
+                            dateOptions[selectedDateIndex].second,
+                            currentStartTime,
+                            currentEndTime,
+                            totalDurationText
+                        )
+                    },
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = NavyPrimary,
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Confirm",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showConfirmDialog = false },
+                    shape = CircleShape,
+                    border = BorderStroke(1.dp, BorderGray),
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Cancel",
+                        color = TextNavyDark,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         )
     }
 
@@ -98,7 +221,7 @@ fun FacilityDetailsScreen(
             .fillMaxSize()
             .background(ScreenBgGray)
     ) {
-        // LỚP 1: Header Gradient bo cong 2 góc dưới
+        // LỚP 1: Header Gradient bo cong 2 góc dưới (Cố định)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,7 +238,7 @@ fun FacilityDetailsScreen(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // --- PHẦN 1: CỐ ĐỊNH (Top Bar + Card 1 Thông tin phòng) ---
+            // --- PHẦN 1: (Top Bar + Card 1 Thông tin phòng) ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -327,7 +450,7 @@ fun FacilityDetailsScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- PHẦN 2: CHỈ CUỘN CARD 2 (Book This Facility) ---
+            // --- PHẦN 2: CARD 2 (Book This Facility) ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -522,16 +645,9 @@ fun FacilityDetailsScreen(
                             )
                         }
 
-                        // 5. Nút Confirm Booking
+                        // 5. Nút Confirm Booking -> Mở bảng xác nhận
                         Button(
-                            onClick = {
-                                onConfirmBookingClick(
-                                    dateOptions[selectedDateIndex].second,
-                                    currentStartTime,
-                                    currentEndTime,
-                                    totalDurationText
-                                )
-                            },
+                            onClick = { showConfirmDialog = true },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(46.dp),
@@ -692,7 +808,7 @@ private fun calculateDurationLabel(start: String, end: String): String {
     return if (minutes == 0) "${hours}h" else "${hours}h${minutes}m"
 }
 
-@Preview(showBackground = true, widthDp = 428, heightDp = 1040)
+@Preview(showBackground = true, widthDp = 428, heightDp = 926)
 @Composable
 fun FacilityDetailsScreenPreview() {
     MaterialTheme {

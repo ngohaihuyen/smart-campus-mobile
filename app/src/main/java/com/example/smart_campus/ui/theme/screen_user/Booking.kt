@@ -70,7 +70,6 @@ fun MyBookingsScreen(
     var selectedFilter by remember { mutableStateOf("All") }
     var bookingToCancel by remember { mutableStateOf<UserReservationUiModel?>(null) }
 
-    // Danh sách 6 lịch đặt đồng bộ từ thiết kế Desktop
     val reservations = remember {
         mutableStateListOf(
             UserReservationUiModel(
@@ -220,7 +219,7 @@ fun MyBookingsScreen(
 
         // LỚP 2: Phần trên cố định + Danh sách thẻ đặt phòng cuộn bên dưới
         Column(modifier = Modifier.fillMaxSize()) {
-            // --- PHẦN 1: CỐ ĐỊNH (Top Bar + Thẻ tìm kiếm & filter chips + Thanh đếm số lượng) ---
+            // --- PHẦN 1: CỐ ĐỊNH ---
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -229,7 +228,6 @@ fun MyBookingsScreen(
             ) {
                 Spacer(modifier = Modifier.height(44.dp))
 
-                // Hàng trên cùng: Nút Back + Pill User
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -272,7 +270,6 @@ fun MyBookingsScreen(
                     }
                 }
 
-                // Icon lịch & Tiêu đề chính giữa Header
                 Icon(
                     imageVector = Icons.Rounded.EventAvailable,
                     contentDescription = "My Bookings Icon",
@@ -289,7 +286,7 @@ fun MyBookingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // THẺ TÌM KIẾM & DẢI TAB TRẠNG THÁI (Đè lên đáy Header)
+                // Thẻ tìm kiếm & dải tab trạng thái
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
@@ -302,7 +299,6 @@ fun MyBookingsScreen(
                             .padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Ô tìm kiếm đặt chỗ
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
@@ -334,7 +330,6 @@ fun MyBookingsScreen(
                             )
                         )
 
-                        // Hàng 5 chip lọc trạng thái cuộn ngang
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -369,7 +364,6 @@ fun MyBookingsScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Thanh đếm số lượng đặt phòng
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -544,28 +538,17 @@ private fun UserReservationCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
-            HorizontalDivider(thickness = 1.dp, color = Color(0xFFF2F4F7))
-            Spacer(modifier = Modifier.height(8.dp))
+            // Hàng 3: Cancel khi đơn đang APPROVED hoặc PENDING
+            if (canCancel) {
+                Spacer(modifier = Modifier.height(10.dp))
+                HorizontalDivider(thickness = 1.dp, color = Color(0xFFF2F4F7))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            // Hàng 3: Hành động View & Cancel đồng bộ với bảng Desktop
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "View Details",
-                    color = TealAccent,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .clickable { onViewClick() }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-
-                if (canCancel) {
-                    Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = "Cancel",
                         color = Color(0xFFD92D20),
@@ -662,4 +645,3 @@ fun MyBookingsScreenPreview() {
         }
     }
 }
-

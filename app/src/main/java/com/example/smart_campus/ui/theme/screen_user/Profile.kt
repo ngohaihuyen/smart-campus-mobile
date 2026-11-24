@@ -98,7 +98,7 @@ fun UserProfileScreen(
                 )
         )
 
-        // LỚP 2: Bố cục cố định vừa khít 1 màn hình (không cuộn)
+        // LỚP 2: Card mô tả
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -176,7 +176,7 @@ fun UserMainScreen(
                 )
             }
 
-            // TAB 1: Facilities (Bạn sẽ thay bằng FacilitiesScreen() khi viết xong)
+            // TAB 1: Facilities
             composable(AppRoute.Facilities.route) {
                 UserFacilitiesScreen(
                     userName = "Bimbim",
